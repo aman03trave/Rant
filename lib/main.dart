@@ -66,10 +66,12 @@ class HomePage extends StatelessWidget {
               ),
             )),
             SizedBox(height: 20),
-            ElevatedButton(
+            ElevatedButton.icon(
                 onPressed:(){
                   Navigator.pushNamed(context, '/landing');},
-                child: Text("Explore"),
+                  icon: Icon(Icons.explore),
+                  label: Text("Explore"),
+
 
             )
           ],

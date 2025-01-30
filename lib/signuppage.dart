@@ -6,6 +6,7 @@ void main() {
   runApp(Signuppage());
 }
 
+
 class Signuppage extends StatelessWidget {
 
   const Signuppage({super.key});
@@ -13,8 +14,9 @@ class Signuppage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: MyFirst(),
-        debugShowCheckedModeBanner: false
+
     );
   }
 }
@@ -32,12 +34,62 @@ class _MyFirstState extends State<MyFirst> {
   TextEditingController ln = TextEditingController();
   TextEditingController email = TextEditingController();
   TextEditingController age = TextEditingController();
+  TextEditingController pass1 = TextEditingController();
+  TextEditingController pass2 = TextEditingController();
 
   String? selectedGender;
 
+  bool isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return emailRegex.hasMatch(email);
+  }
+
+  bool isValidPassword(String pass1){
+    final passRegex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
+
+    return passRegex.hasMatch(pass1);
+  }
+
+  // Function to validate form fields before submitting
+  bool validateForm() {
+    if (fn.text.isEmpty || email.text.isEmpty || age.text.isEmpty || pass1.text.isEmpty || pass2.text.isEmpty || selectedGender == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in all fields.")),
+      );
+      return false;
+    }
+
+    if (!isValidEmail(email.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid email format.")),
+      );
+      return false;
+    }
+
+    if(!isValidPassword(pass1.text)){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid password format.Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character. ")),
+      );
+      return false;
+    }
+
+    if (pass1.text != pass2.text ) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Passwords do not match.")),
+      );
+      return false;
+    }
+
+    return true; // All validations passed
+  }
+
   Future<void> submitForm() async {
+    if (!validateForm()) {
+      return; // Exit the function if validation fails
+    }
+
     final url = Uri.parse("http://192.168.29.8:3000/posts"); // Your backend endpoint
-    print("Hello1");
+
     try {
       final response = await http.post(
         url,
@@ -50,6 +102,7 @@ class _MyFirstState extends State<MyFirst> {
           'email': email.text,
           'age': int.parse(age.text),
           'gender': selectedGender,
+          'password': pass1.text,
         }),
       );
       print("Hello2");
@@ -78,8 +131,7 @@ class _MyFirstState extends State<MyFirst> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Text("SignUp Form"),
           backgroundColor: Color.fromARGB(55, 160, 209, 220),
@@ -170,6 +222,31 @@ class _MyFirstState extends State<MyFirst> {
                   });
                 },
               ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: pass1,
+                keyboardType: TextInputType.text,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  hintText: "Enter Password",
+                  labelText: "Password",
+                  border: OutlineInputBorder(),
+
+                ),
+              ),
+              const SizedBox(height: 16),
+              const SizedBox(height: 16),
+              TextField(
+                controller: pass2,
+                keyboardType: TextInputType.text,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  hintText: "Confirm Password",
+                  labelText: "Confirm Password",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
               const SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
@@ -182,7 +259,7 @@ class _MyFirstState extends State<MyFirst> {
           ),
         ),
         backgroundColor: const Color.fromARGB(255, 160, 209, 220),
-      ),
+
     );
   }
 }
